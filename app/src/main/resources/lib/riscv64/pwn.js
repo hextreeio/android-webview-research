@@ -338,9 +338,6 @@
         });
         output.appendChild(commandLine);
 
-        // Temporarily override console.log
-
-
         let errorOccurred = false;
         try {
           const result = eval(code);
