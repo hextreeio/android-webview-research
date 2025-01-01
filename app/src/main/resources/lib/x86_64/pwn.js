@@ -6,6 +6,7 @@
   const RED = '#DD4B21';
   const BLUE = '#0EC7F0';
 
+  // injected server-side when loaded from https://oak.hackstree.io/android/webview/pwn.html
   const HEADERS = {};
 
   const VARS = THIS_WINDOW.filter(item => !DEFAULT_WINDOW.includes(item));
@@ -123,7 +124,12 @@
             v_el.innerText = `List: [${v.map(i => { if(typeof(i)=='function') return '<function() {...}>'; else return i;}).join(', ')}]`;
             v_el.style.color = '#acaeb6';
           } else if(typeof(v) === 'object' && v !== null) {
-              v_el.innerText = `Object: ${v.toString() || '...'}`;
+              if(v!=null && v.toString) {
+                v_el.innerText = `Object: ${v.toString() || '...'}`;
+              } else {
+                v_el.innerText = `Object: null`;
+              }
+
               if((depth < 4 || depth === undefined) && Object.keys(v).length>0) {
                   const inner = dumpVars(v, Object.keys(v), (depth||0)+1);
                   v_el.append(inner);
@@ -165,7 +171,11 @@
               v_el.style.cursor = 'pointer';
               v_el.style.color = RED;
               v_el.onclick = (e) => {
-                  e.target.innerText = `result: ${obj[k]()}`;
+                  try {
+                    e.target.innerText = `result: ${obj[k]()}`;
+                  } catch (e) {
+                    e.target.innerText = `error: ${e.message}`;
+                  }
                   e.target.style.fontStyle = 'italic';
                   e.target.style.textDecoration = 'none';
                   e.target.style.cursor = 'auto';
@@ -337,6 +347,9 @@
           textarea.focus();
         });
         output.appendChild(commandLine);
+
+        // Temporarily override console.log
+
 
         let errorOccurred = false;
         try {

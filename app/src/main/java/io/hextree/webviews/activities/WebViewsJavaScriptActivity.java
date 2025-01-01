@@ -71,7 +71,7 @@ public class WebViewsJavaScriptActivity extends AppCompatActivity {
 
         webView.addJavascriptInterface(new JsObject(), "injectedObject");
 
-        webView.loadUrl("file:///android_asset/intent.html");
+        webView.loadUrl("file:///android_asset/pwn.html");
         //webView.loadData("html", "text/html", null);
         findViewById(R.id.logo).setOnClickListener(view -> {
             webView.loadUrl("javascript:document.write(injectedObject.toString())");

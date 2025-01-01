@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.provider.Browser;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -41,7 +42,13 @@ public class CustomTabsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customtab);
 
-        bindCustomTabsServiceConnection();
+        try {
+            bindCustomTabsServiceConnection();
+        } catch (IllegalArgumentException e) {
+            Log.i(TAG, "The app probably runs on an Android system without a compatible browser like Chrome. Is this a non-PlayStore emulator?");
+            Toast.makeText(this, "No CustomTabs browser available?", Toast.LENGTH_LONG).show();
+            finish();
+        }
 
         findViewById(R.id.hextree_logo).setOnClickListener(view -> {
             if (session != null) {
