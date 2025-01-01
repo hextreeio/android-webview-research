@@ -94,6 +94,19 @@
             android:text="JavaScript Interface Tests" />
 
 
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="4dp"
+            android:background="@color/colorAccent" />
+
+        <Button
+            android:id="@+id/btn_pwn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="WebView PWN Page" />
+
     </LinearLayout>
 
     <Button

@@ -50,7 +50,7 @@
   mainDiv.appendChild(originDiv);
   let originText = `window.location = ${window.location}\n`;
   originText += `window.location.origin = ${window.location.origin}\n`;
-  originText += `document.cookie = ${document.cookie}\n`;
+  try{ originText += `document.cookie = ${document.cookie}\n`; } catch() {}
   originText += `window.navigator.appVersion = ${window.navigator.appVersion}\n`;
   originDiv.innerText = originText;
 

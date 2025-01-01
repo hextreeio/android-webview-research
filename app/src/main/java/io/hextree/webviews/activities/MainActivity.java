@@ -79,6 +79,12 @@ public class MainActivity extends AppCompatActivity {
             startActivity(t);
         });
 
+        ((Button) findViewById(R.id.btn_pwn)).setOnClickListener(view -> {
+            Intent t = new Intent(this, WebViewsTestActivity.class);
+            t.putExtra("TEST_CASE", "pwn.html");
+            startActivity(t);
+        });
+
         ((Button) findViewById(R.id.btn_jsinterface)).setOnClickListener(view -> {
             Intent t = new Intent(this, WebViewsJavaScriptActivity.class);
             startActivity(t);
