@@ -1,0 +1,253 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Origin Test</title>
+    <style>
+        body { font-size: 0.6rem; }
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+        .w-1/2 { width: 50%; }
+        .h-1/2 { height: 50%; }
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .flex-1 { flex: 1 1 0%; }
+        .m-2 { margin: 2px; }
+        .mt-3 { margin: 3px; }
+        .mt-4 { margin: 4px; }
+        .p-1 { padding: 1px; }
+        .flex-wrap { flex-wrap: wrap; }
+        .flex-row { flex-direction: row; }
+        .flex-col { flex-direction: column; }
+        .grow { flex-grow: 1; }
+        .shrink { flex-shrink: 1; }
+        .justify-center { justify-content: center; }
+        .items-stretch { align-items: stretch; }
+        .items-center { align-items: center; }
+        .grid-cols-2 { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+        .self-stretch { align-self: stretch; }
+        .self-start { align-self: flex-start; }
+        .text-white { color: #fff; }
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .whitespace-nowrap { white-space: nowrap; }
+
+        .test-iframe {
+            background-color: #f0f0f0; /* Light background for visibility */
+        }
+        .success { background-color: green; }
+        .failure { background-color: red; }
+        .pending { background-color: lightgray; }
+        .warning { background-color: yellow; color: black; }
+        body.complete { background-color: lightgreen; }
+        .info { padding: 2px }
+    </style>
+</head>
+<body>
+
+<div class="info m-2">
+    Can current location <b><span id="url" class="truncate whitespace-nowrap"></span></b>
+    (origin: <b><span id="origin"></span></b>, domain: <b><span id="domain"></span></b>) access:
+</div>
+
+<div class="container" id="test-container">
+    <noscript>
+        <b>JavaScript Required</b><br />
+        This test page requires JS to execute various access checks.
+    </noscript>
+</div>
+<script>
+    var URLS = [
+        "https://oak.hackstree.io/android/webview/secret.html",
+        "https://example.com/assets/secret.html",
+        "file:///android_asset/secret.html",
+        "file:///data/data/io.hextree.webviews/files/secret.html",
+        "content://io.hextree.webview/internal/secret.html",
+        "content://io.hextree.fileprovider/root/origins.html"
+    ];
+
+    function cleanData(input) {
+        return input.trim().replace(/\n/g, ' ').replace(/[^\x20-\x7E]/g, '');
+    }
+
+    // Delay each testcase
+    const DELAY = 100;
+    const header_el = document.getElementById('url');
+    const origin_el = document.getElementById('origin');
+    const domain_el = document.getElementById('domain');
+    header_el.innerText = `${window.location}`;
+    origin_el.innerText = `${window.location.origin}`;
+    domain_el.innerText = `${window.document.domain}`;
+
+    const container = document.getElementById('test-container');
+    const TEST_DIV_CLASS = `p-1 truncate whitespace-nowrap`
+
+    // prepare testcases
+    URLS.forEach((url, index) => {
+        const square = document.createElement('div');
+        square.className = 'square';
+        square.id = `square-${index}`;
+        square.innerHTML = `
+        <div class="mt-4">
+            <div class="test-url truncate whitespace-nowrap">${index+1}. <b>${url}</b></div>
+            <div class="grid grid-cols-2 items-stretch text-white">
+                <div class="w-1/2 p-1" style="height: 50px">
+                    <iframe class="test-iframe w-full h-full" id="iframe-embed-${index}" src="about:blank"></iframe>
+                </div>
+                <div class="flex flex-col p-1 m-2">
+                    <div class="${TEST_DIV_CLASS} pending" id="iframe-${index}">&lt;iframe&gt; ...</div>
+                    <div class="${TEST_DIV_CLASS} pending" id="iframe-read-${index}">&lt;iframe&gt; ...</div>
+                    <div class="${TEST_DIV_CLASS} pending" id="fetch-read-${index}">fetch() ...</div>
+                    <div class="${TEST_DIV_CLASS} pending" id="xhr-read-${index}">fetch() ...</div>
+                </div>
+            </div>
+        </div>
+        `;
+        container.appendChild(square);
+    });
+
+    function runXhrTest(test_nr, url) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.responseText) {
+                text = cleanData(xhr.responseText);
+                console.log(xhr.responseText);
+                document.getElementById(`xhr-read-${test_nr}`).className = `${TEST_DIV_CLASS} success`;
+                document.getElementById(`xhr-read-${test_nr}`).innerText = `xhr ${text}`;
+            } else {
+                text = cleanData(xhr.responseText);
+                document.getElementById(`xhr-read-${test_nr}`).className = `${TEST_DIV_CLASS} warning`;
+                document.getElementById(`xhr-read-${test_nr}`).innerText = `xhr ${xhr.readyState} ${xhr.status} ${text}`;
+            }
+        };
+        xhr.onerror = function(error) {
+            document.getElementById(`xhr-read-${test_nr}`).className = `${TEST_DIV_CLASS} failure`;
+            document.getElementById(`xhr-read-${test_nr}`).innerText = `xhr ${error.target.status}`;
+        }
+        xhr.send();
+    }
+
+    function runFetchTest(test_nr, url) {
+        try {
+            fetch(url)
+                .then(response => {
+                    console.log(`${url}: fetch`);
+                    response.text()
+                        .then(text => {
+                            text = cleanData(text);
+                            if (text.includes("net::ERR_")) {
+                                console.log(text);
+                                document.getElementById(`fetch-read-${test_nr}`).className = `${TEST_DIV_CLASS} warning`;
+                                document.getElementById(`fetch-read-${test_nr}`).innerText = `fetch() net:ERR ${text}`;
+                            } else {
+                                document.getElementById(`fetch-read-${test_nr}`).className = `${TEST_DIV_CLASS} success`;
+                                document.getElementById(`fetch-read-${test_nr}`).innerText = `fetch() .text() ${text}`;
+                            }
+                        })
+                        .catch(error => {
+                            console.log(error);
+                            document.getElementById(`fetch-read-${test_nr}`).className = `${TEST_DIV_CLASS} warning`;
+                            document.getElementById(`fetch-read-${test_nr}`).innerText = `fetch() .text() ${error}`;
+                        });
+                })
+                .catch(error => {
+                    document.getElementById(`fetch-read-${test_nr}`).className = `${TEST_DIV_CLASS} failure`;
+                    document.getElementById(`fetch-read-${test_nr}`).innerText = `fetch() ${error}`;
+                });
+        } catch(error) {
+            document.getElementById(`fetch-read-${test_nr}`).className = `${TEST_DIV_CLASS} failure`;
+            document.getElementById(`fetch-read-${test_nr}`).innerText = `fetch() ${error}`;
+        }
+    }
+
+
+    function runIframeTest(test_nr, url) {
+        const iframe = document.getElementById(`iframe-embed-${test_nr}`);
+
+        function attemptIframeRead() {
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const iframeWin = iframe.contentWindow || null;
+                if(iframeWin && iframeDoc) {
+                    const contentType = iframeDoc.contentType;
+                    var content = '';
+                    if (contentType == "text/html" || contentType == "text/plain") {
+                        content = iframeDoc.body.textContent.trim().replaceAll('\n',' ');
+                    } else if (contentType.includes("xml")) {
+                        content = (new XMLSerializer().serializeToString(iframeDoc)).trim().replaceAll('\n',' ');;
+                    } else {
+                        const data = iframeDoc.body ? iframeDoc.body.innerHTML : iframeDoc.documentElement.innerHTML;
+                        const blob = new Blob([data], { type: contentType });
+                        const reader = new FileReader();
+
+                        content = (new Promise((resolve, reject) => {
+                            reader.onload = () => resolve(reader.result);
+                            reader.onerror = () => reject("Failed to read binary content.");
+                            reader.readAsText(blob);
+                        })).trim().replaceAll('\n',' ');
+                    }
+                    content = cleanData(content);
+                    if (!contentType) {
+                        document.getElementById(`iframe-read-${test_nr}`).className = `${TEST_DIV_CLASS} warning`;
+                        document.getElementById(`iframe-read-${test_nr}`).innerText = `<iframe> null`;
+                    } else if (content && content.includes("net::ERR_")) {
+                        document.getElementById(`iframe-read-${test_nr}`).className = `${TEST_DIV_CLASS} warning`;
+                        document.getElementById(`iframe-read-${test_nr}`).innerText = `<iframe> ${contentType}: net::ERR ${content}`;
+                    } else {
+                        document.getElementById(`iframe-read-${test_nr}`).className = `${TEST_DIV_CLASS} success`;
+                        document.getElementById(`iframe-read-${test_nr}`).innerText = `<iframe> ${contentType}: ${content}`;
+                        console.log(`${url}: iframe-read`);
+                    }
+                } else {
+                    document.getElementById(`iframe-read-${test_nr}`).className = `${TEST_DIV_CLASS} failure`;
+                    document.getElementById(`iframe-read-${test_nr}`).innerText = `<iframe> .body ${content}`;
+                }
+            } catch (error) {
+                console.log(error);
+                document.getElementById(`iframe-read-${test_nr}`).className = `${TEST_DIV_CLASS} failure`;
+                document.getElementById(`iframe-read-${test_nr}`).innerText = `<iframe> ${error}`;
+            }
+        }
+
+        iframe.onload = () => {
+            document.getElementById(`iframe-${test_nr}`).className = `${TEST_DIV_CLASS} success`;
+            document.getElementById(`iframe-${test_nr}`).innerText = `<iframe> onload()`;
+            console.log(`ONLOAD ${url}: iframe`);
+            attemptIframeRead();
+        };
+        iframe.onerror = () => {
+            document.getElementById(`iframe-${test_nr}`).className = `${TEST_DIV_CLASS} failure`;
+            document.getElementById(`iframe-${test_nr}`).innerText = `<iframe> onerror()`;
+            console.log(`ONERROR ${url}: iframe`);
+            attemptIframeRead();
+        };
+
+        setTimeout(attemptIframeRead, DELAY);
+        iframe.src = url;
+
+    }
+
+    let TEST_ID = 0;
+    function runNextTest() {
+        if (TEST_ID >= URLS.length) {
+            document.body.classList.add('complete');
+            console.log("All tests completed!");
+            return;
+        }
+
+        const url = URLS[TEST_ID];
+        console.log(`RUN URL ${TEST_ID}: ${url}`);
+
+        runXhrTest(TEST_ID, url);
+        runFetchTest(TEST_ID, url);
+        runIframeTest(TEST_ID, url);
+
+        TEST_ID++;
+        setTimeout(runNextTest, DELAY);
+
+    }
+
+    runNextTest();
+</script>
+</body>
+</html>

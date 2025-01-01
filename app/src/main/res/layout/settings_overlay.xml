@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/settings_overlay"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Add your CheckBoxes here -->
+        <com.google.android.flexbox.FlexboxLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:flexWrap="wrap">
+
+            <CheckBox
+                android:id="@+id/check_setJavaScriptEnabled"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="0dp"
+                android:text="JSEnabled" />
+
+            <CheckBox
+                android:id="@+id/check_setWebContentsDebuggingEnabled"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="0dp"
+                android:text="WebContentsDebugging" />
+
+            <CheckBox
+                android:id="@+id/check_setAllowContentAccess"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="0dp"
+                android:text="AllowContentAccess" />
+
+            <CheckBox
+                android:id="@+id/check_setAllowFileAccess"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="0dp"
+                android:text="AllowFileAccess" />
+
+            <CheckBox
+                android:id="@+id/check_setAllowFileAccessFromFileURLs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="0dp"
+                android:text="AllowFileAccessFromFileURLs" />
+
+
+            <CheckBox
+                android:id="@+id/check_setAllowUniversalAccessFromFileURLs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="0dp"
+                android:text="AllowUniversalAccessFromFileURLs" />
+
+        </com.google.android.flexbox.FlexboxLayout>
+
+        <!-- Add other CheckBoxes as needed -->
+        <!-- ... -->
+
+        <!-- Close button -->
+        <Button
+            android:id="@+id/button_close_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="OK"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</ScrollView>
