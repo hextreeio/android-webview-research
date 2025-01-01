@@ -191,8 +191,8 @@ public class WebViewsTestActivity extends AppCompatActivity {
         }
 
 
-        //String webview_btn4 = FileProvider.getUriForFile(getApplicationContext(), "io.hextree.webprovider", new File(getFilesDir(), getTestCase())).toString();
-        String webview_btn4 = "content://io.hextree.webview/internal/origins.html";
+        String webview_btn4 = FileProvider.getUriForFile(getApplicationContext(), "io.hextree.webprovider", new File(getFilesDir(), getTestCase())).toString();
+        //String webview_btn4 = "content://io.hextree.webview/internal/origins.html";
         ((Button) view.findViewById(R.id.webview_btn4)).setText(webview_btn4);
         ((Button) view.findViewById(R.id.webview_btn4)).setOnClickListener(v -> {
             loadNewURL(webview_btn4);
