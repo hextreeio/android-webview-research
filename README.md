@@ -79,7 +79,7 @@ Below are some notable results from the tests conducted with this app. Understan
 ```
 2. If [`setAllowUniversalAccessFromFileURLs(true)`](https://developer.android.com/reference/android/webkit/WebSettings#setAllowUniversalAccessFromFileURLs(boolean)) is enabled, the `content://` origin is partially treated as a file URL. While XHR requests are blocked, file leaks through `<iframe>` are possible.
 
-FYI: We have also reported this behavior in case this is a security bug: https://issuetracker.google.com/issues/387101937
+FYI: We have also [reported this behavior](https://issuetracker.google.com/issues/387101937) in case this is a security bug. But Google said this is working as intended. 
 
 ![Screenshots of content:// SOP testcases](content_provider.png)
 
